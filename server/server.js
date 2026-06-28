@@ -13,7 +13,17 @@ const app = express();
 const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:5173").split(",");
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      // Allow no-origin requests (e.g. curl, server-to-server) and any configured origin
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      // Also allow any Vercel preview URL for this project during development
+      if (/^https:\/\/myecotrip-[a-z0-9]+\.vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
